@@ -1,6 +1,6 @@
 #include <stdio.h>
 
 int main(){
-    printf("hello world\n");
+    printf("Hello, RISC-V!\n");
     return 0;
 }
