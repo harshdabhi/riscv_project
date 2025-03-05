@@ -1,0 +1,186 @@
+Resource utilization generally refers to how efficiently various system resources (such as CPU, memory, disk I/O, etc.) are being used during the execution of a program. For the context of your SHA program, **CPU usage** and **memory usage** are two key resources to consider.
+
+### **1. CPU Utilization**
+
+CPU utilization measures how much of the CPU's processing power is used by the program. This is typically measured as a percentage of the total available CPU time.
+
+To calculate CPU utilization, you can:
+1. **Measure the total CPU time consumed by the program** during its execution.
+2. **Compare it against the available CPU time** to estimate the percentage of CPU usage.
+
+There are different ways to measure CPU utilization depending on the operating system you're using:
+
+#### **On Linux/macOS (using `time` command)**
+
+You can use the `time` command in the terminal to measure CPU usage. For example, to run your program and get resource usage:
+
+```bash
+time ./your_sha_program
+```
+
+This will give you output similar to:
+
+```
+real    0m0.215s
+user    0m0.158s
+sys     0m0.029s
+```
+
+- **real**: The wall-clock time (total elapsed time).
+- **user**: The time the program spent executing in user mode.
+- **sys**: The time the program spent executing in kernel mode.
+
+From this output, you can get an idea of how much CPU time was consumed by your program (in the user and sys categories).
+
+#### **On Linux/macOS (using `top` or `htop`)**
+
+You can also use the `top` or `htop` command to monitor the CPU usage of your program in real-time. After running your program, use:
+
+```bash
+top -p <pid>
+```
+
+Where `<pid>` is the process ID of your program. `htop` provides a more user-friendly interface.
+
+### **2. Memory Utilization**
+
+Memory utilization refers to the amount of RAM your program uses during its execution. You can measure this in several ways, but common methods include:
+
+#### **Using `getrusage()` in C**
+
+In C, you can use the `getrusage()` function to get the memory usage and CPU time of your program. Here's how you can use it to measure the memory usage:
+
+```c
+#include <stdio.h>
+#include <sys/resource.h>
+#include <unistd.h>
+
+void print_memory_usage() {
+    struct rusage usage;
+    getrusage(RUSAGE_SELF, &usage);
+
+    // Memory usage in kilobytes
+    printf("Max memory usage: %ld KB\n", usage.ru_maxrss);
+}
+
+int main() {
+    // Your SHA processing code
+
+    // Print memory usage after execution
+    print_memory_usage();
+
+    return 0;
+}
+```
+
+The `ru_maxrss` field in the `rusage` structure gives the maximum resident set size, i.e., the maximum amount of memory the process has used.
+
+#### **Using `time` Command on Linux/macOS**
+
+Just like CPU usage, you can also get memory utilization using the `time` command:
+
+```bash
+/usr/bin/time -v ./your_sha_program
+```
+
+The output will include:
+
+```
+Maximum resident set size (kbytes): 123456
+```
+
+This indicates the peak memory usage in kilobytes.
+
+### **3. Disk I/O Utilization**
+
+Disk I/O refers to the read and write operations your program performs on the disk. If you're dealing with large files (e.g., when hashing files), it’s important to measure disk I/O to see how much time is spent on reading or writing data.
+
+To measure disk I/O, you can:
+1. **Use `time` with the `-v` option** to get detailed I/O statistics.
+2. **Use `iotop` (on Linux)** to monitor real-time disk I/O by specific processes.
+
+Example with `time`:
+
+```bash
+/usr/bin/time -v ./your_sha_program
+```
+
+Look for lines like:
+
+```
+    Voluntary context switches: 2
+    Involuntary context switches: 4
+    Maximum resident set size (kbytes): 123456
+    File system inputs: 0 bytes
+    File system outputs: 0 bytes
+```
+
+### **4. Network Utilization (if applicable)**
+
+If your program involves network operations (e.g., downloading files to hash), you should measure how much network bandwidth is used. On Linux, you can use tools like `iftop`, `nload`, or `netstat` to monitor network activity.
+
+For example, you can use `iftop` to monitor the network usage of your program in real-time.
+
+### **How to Calculate Resource Utilization**
+
+To calculate resource utilization, you need to:
+1. **Measure the resource consumption** (CPU, memory, disk, etc.) for a given period.
+2. **Calculate the percentage or total amount** of resource usage during that period.
+
+For example:
+
+- **CPU Utilization**: From `time`, you might find that your program uses 0.2 seconds of CPU time out of 1 second of wall-clock time. CPU utilization would be:
+
+  \[
+  \text{CPU Utilization} = \frac{\text{CPU time}}{\text{Wall-clock time}} = \frac{0.2}{1} = 20\%
+  \]
+
+- **Memory Utilization**: If your program uses 50 MB of memory at its peak, that’s the maximum memory usage. You can compare this against the total available system memory to calculate the percentage of memory used.
+
+  \[
+  \text{Memory Utilization} = \frac{\text{Peak Memory Used}}{\text{Total Memory}} \times 100
+  \]
+
+### **Example Summary**
+
+Let’s say you ran the `time` command on your program and got the following:
+
+```
+real    0m2.154s
+user    0m1.795s
+sys     0m0.359s
+```
+
+Additionally, `time -v` showed:
+
+```
+    Maximum resident set size (kbytes): 20480
+    File system inputs: 0 bytes
+    File system outputs: 0 bytes
+```
+
+- **CPU Utilization**: The user time is 1.795 seconds, and the wall-clock time is 2.154 seconds, so:
+
+  \[
+  \text{CPU Utilization} = \frac{1.795}{2.154} \times 100 \approx 83.3\%
+  \]
+
+- **Memory Utilization**: The maximum memory used is 20 MB (`20480` KB). You can compare this to your system's total memory. For example, if your system has 8 GB of RAM (8192 MB):
+
+  \[
+  \text{Memory Utilization} = \frac{20}{8192} \times 100 \approx 0.24\%
+  \]
+
+### **Additional Tools for Resource Utilization Measurement**
+
+- **Linux**: `top`, `htop`, `time -v`, `iotop`, `getrusage()`, `ps`, `vmstat`
+- **macOS**: `top`, `time -v`, `Activity Monitor`
+- **Windows**: Task Manager, Resource Monitor, `Performance Monitor`
+
+### **Summary**
+
+1. **CPU Utilization**: Measure the time spent in user and system mode using `time` or `getrusage()` and calculate the percentage of total CPU usage.
+2. **Memory Utilization**: Measure peak memory usage using `time -v` or `getrusage()`.
+3. **Disk I/O Utilization**: Use `time -v` or tools like `iotop` to measure read/write operations.
+4. **Network Utilization**: Use `iftop`, `netstat`, or `nload` if applicable.
+

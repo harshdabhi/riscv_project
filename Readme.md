@@ -15,7 +15,28 @@ This project demonstrates how to compile and run RISC-V C code using the RISC-V 
 
 ## Installation
 
-### Install RISC-V GNU Toolchain
+### Install RISC-V GNU Toolchain and Qemu using Docker
+
+#### Clone this directory to desired dir and cd to dir
+#### Open terminal and type following command
+```bash
+   docker build -t {$ image_name} .
+   docker run -it {$ image_name}
+```
+
+#### Type following command to check installation and its path
+
+```bash
+
+   # will show path compiler if installed properly
+   which riscv64-linux-gnu-gcc
+
+   # will show path of Qemu if installed properly
+   which qemu-riscv64
+
+```
+
+
 
 If `riscv64-linux-gnu-` and its related tools are not available on your system, install them using the following commands:
 
@@ -69,10 +90,14 @@ qemu-riscv64 -L /usr/riscv64-linux-gnu -cpu max ./hello
 ## Important Resources
 
 - [RISC-V GNU Toolchain Documentation](https://github.com/riscv/riscv-gnu-toolchain)
-- [QEMU Documentation](https://www.qemu.org/docs/)
+- [QEMU Documentation](https://www.qemu.org/)
 - [RISC-V Official Website](https://riscv.org/)
 
 ---
+
+## Important Note
+Bit manipulation: Zba, Zbb, Zbc, Zbs
+Crypto scalar: Zbkb, Zbkc, Zbkx, Zk*
 
 ## Example Workflow
 
@@ -101,10 +126,26 @@ qemu-riscv64 -L /usr/riscv64-linux-gnu -cpu max ./hello
    Hello, RISC-V!
    ```
 
+
+## Command to execute B extension
+
+
+## Command to execute K extension
+   ```bash
+
+   riscv64-linux-gnu-gcc -o sha ./sha_code.c
+
+   # without K extension
+   qemu-riscv64 -L /usr/riscv64-linux-gnu -cpu max,zbkb=false ./sha
+
+   # With K extension
+   qemu-riscv64 -L /usr/riscv64-linux-gnu -cpu max,zbkb=true ./sha
+
+   ```
 ---
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License.
 
 

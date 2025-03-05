@@ -1,3 +1,4 @@
+# Choosing the Distro as Ubuntu
 FROM ubuntu:22.04 AS env
 
 
@@ -50,12 +51,14 @@ RUN curl -O https://download.qemu.org/qemu-9.2.2.tar.xz && \
 WORKDIR /qemu-9.2.2
 RUN ./configure && make -j `nproc`
 
-#
+# Moving the files from env to root
 FROM env
 COPY --from=toolchain /opt/riscv /opt/riscv
 COPY --from=qemu /qemu-9.2.2/build/qemu-riscv64 /usr/local/bin/
 
 
+# Installation of RiscV64 linux Gnu
+# (remove this part if any kind of error takes places)
 RUN apt update && \
     apt install -y \
     gcc-riscv64-linux-gnu \
