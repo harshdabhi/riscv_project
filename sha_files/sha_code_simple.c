@@ -183,22 +183,25 @@ void calculate_and_output_utilization_and_performance(double cpu_time_used, doub
     long total_memory = sysconf(_SC_PHYS_PAGES) * sysconf(_SC_PAGE_SIZE) / 1024 / 1024;  // in MB
     double ram_utilization = (double)maxrss / (total_memory * 1024) * 100;  // Convert total memory to bytes
 
+    double cpu_energy_efficiency = throughput / (cpu_time_used * 100);  // Arbitrary scaling to account for resource consumption
+    double ram_energy_efficiency = throughput / (ram_utilization * 0.01);
+
     // Open file in append mode
     FILE *output_file = fopen("utilization_and_performance_output.csv", "a");
 
     if (output_file != NULL) {
         // Check if the file is empty (first write) and write the column headers
         if (ftell(output_file) == 0) {
-            fprintf(output_file, "RAM Utilization, RAM Utilization (again), Max RAM used (KB), Total RAM available (MB), User CPU time, System CPU time, Total CPU time, CPU time used (seconds), Throughput (bytes/sec), SHA-256 Hash (hex)\n");
+            fprintf(output_file, "RAM Utilization, RAM Utilization (again), Max RAM used (KB), Total RAM available (MB), User CPU time, System CPU time, Total CPU time, CPU time used (seconds), Throughput (bytes/sec),CPU eff, RAM eff, SHA-256 Hash (hex)\n");
         }
 
         // Write the data (RAM Utilization, CPU Time, etc.)
-        fprintf(output_file, "%.2f, %.2f, %ld, %ld, %.6f, %.6f, %.6f, %.6f, %.6f, ",
+        fprintf(output_file, "%.2f, %.2f, %ld, %ld, %.6f, %.6f, %.6f, %.6f, %.6f,%.6f,%.6f, ",
                 ram_utilization, ram_utilization, maxrss, total_memory,
                 (double)(usage.ru_utime.tv_sec + usage.ru_utime.tv_usec / 1e6),
                 (double)(usage.ru_stime.tv_sec + usage.ru_stime.tv_usec / 1e6),
                 (double)(usage.ru_utime.tv_sec + usage.ru_stime.tv_sec),
-                cpu_time_used, throughput);
+                cpu_time_used, throughput,cpu_energy_efficiency,ram_energy_efficiency);
 
         // Write SHA-256 hash in hexadecimal format
         for (int i = 0; i < SHA256_BLOCK_SIZE; i++) {
