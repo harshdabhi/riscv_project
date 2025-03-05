@@ -31,7 +31,9 @@ RUN apt-get update && \
     libglib2.0-dev \
     libslirp-dev && \
     # Ensure pip is installed and upgraded
-    python3 -m pip install --upgrade pip
+    python3 -m pip install --upgrade pip  \
+    libssl-dev \
+    && apt clean
 
 
 

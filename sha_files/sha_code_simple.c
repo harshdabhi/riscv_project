@@ -132,8 +132,7 @@ void sha256_final(uint32_t state[8], const uint8_t *data, size_t len, uint8_t *h
     }
 }
 
-
-void calculate_utilization() {
+double calculate_utilization() {
     struct rusage usage;
     getrusage(RUSAGE_SELF, &usage);
 
@@ -170,8 +169,54 @@ void calculate_utilization() {
     printf("Real (wall-clock) time: %.6f seconds\n", real_time);
     printf("User CPU time: %.6f seconds\n", user_time);
     printf("System CPU time: %.6f seconds\n", sys_time);
+
+    // 1 change
+    return ram_utilization;
 }
 
+void calculate_and_output_utilization_and_performance(double cpu_time_used, double throughput, uint8_t *hash) {
+    // Calculate RAM utilization
+    struct rusage usage;
+    getrusage(RUSAGE_SELF, &usage);
+
+    long maxrss = usage.ru_maxrss;  // in KB
+    long total_memory = sysconf(_SC_PHYS_PAGES) * sysconf(_SC_PAGE_SIZE) / 1024 / 1024;  // in MB
+    double ram_utilization = (double)maxrss / (total_memory * 1024) * 100;  // Convert total memory to bytes
+
+    // Open file in append mode
+    FILE *output_file = fopen("utilization_and_performance_output.csv", "a");
+
+    if (output_file != NULL) {
+        // Check if the file is empty (first write) and write the column headers
+        if (ftell(output_file) == 0) {
+            fprintf(output_file, "RAM Utilization, RAM Utilization (again), Max RAM used (KB), Total RAM available (MB), User CPU time, System CPU time, Total CPU time, CPU time used (seconds), Throughput (bytes/sec), SHA-256 Hash (hex)\n");
+        }
+
+        // Write the data (RAM Utilization, CPU Time, etc.)
+        fprintf(output_file, "%.2f, %.2f, %ld, %ld, %.6f, %.6f, %.6f, %.6f, %.6f, ",
+                ram_utilization, ram_utilization, maxrss, total_memory,
+                (double)(usage.ru_utime.tv_sec + usage.ru_utime.tv_usec / 1e6),
+                (double)(usage.ru_stime.tv_sec + usage.ru_stime.tv_usec / 1e6),
+                (double)(usage.ru_utime.tv_sec + usage.ru_stime.tv_sec),
+                cpu_time_used, throughput);
+
+        // Write SHA-256 hash in hexadecimal format
+        for (int i = 0; i < SHA256_BLOCK_SIZE; i++) {
+            fprintf(output_file, "%02x", hash[i]);
+        }
+        fprintf(output_file, "\n");
+
+        fclose(output_file);
+    }
+}
+
+// Function to calculate energy efficiency (work done per resource consumed)
+void calculate_energy_efficiency(double throughput, double cpu_time_used, double ram_utilization) {
+    double cpu_energy_efficiency = throughput / (cpu_time_used * 100);  // Arbitrary scaling to account for resource consumption
+    double ram_energy_efficiency = throughput / (ram_utilization * 0.01); // Scaling by 1% of RAM utilization
+    printf("CPU Energy Efficiency: %.6f (Throughput per unit CPU time)\n", cpu_energy_efficiency);
+    printf("RAM Energy Efficiency: %.6f (Throughput per unit RAM usage)\n", ram_energy_efficiency);
+}
 
 int main() {
 
@@ -195,7 +240,10 @@ int main() {
     double throughput = (double)data_size / cpu_time_used;
 
 
-    calculate_utilization();
+    double ram_utilization=calculate_utilization();
+    calculate_and_output_utilization_and_performance(cpu_time_used, throughput, hash);
+    calculate_energy_efficiency(throughput,cpu_time_used,ram_utilization);
+
     printf("Throughput: %f bytes per second\n", throughput);
     printf("Time taken: %f seconds\n", cpu_time_used);
 

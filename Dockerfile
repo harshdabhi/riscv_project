@@ -33,6 +33,7 @@ RUN apt-get update && \
     libslirp-dev && \
     # Ensure pip is installed and upgraded
     python3 -m pip install --upgrade pip \
+    libssl-dev \
     && apt clean
 
 

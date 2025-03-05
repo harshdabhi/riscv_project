@@ -184,3 +184,65 @@ Additionally, `time -v` showed:
 3. **Disk I/O Utilization**: Use `time -v` or tools like `iotop` to measure read/write operations.
 4. **Network Utilization**: Use `iftop`, `netstat`, or `nload` if applicable.
 
+
+
+Yes, it is possible to calculate energy efficiency using resource utilization (e.g., CPU usage, RAM usage) versus time. To make this calculation meaningful, you would need to understand the relationship between resource consumption and energy usage in your system, as well as how time factors into this calculation.
+
+### General Concept:
+
+Energy efficiency can be calculated by comparing the useful output (or work) to the total energy consumed (or resources used). In the case of computing, we often look at the energy consumption in terms of resource utilization (CPU, RAM, etc.) and time.
+
+## Steps to Calculate Energy Efficiency:
+
+1. **Determine Energy Consumption**:
+   - Energy consumption can be estimated based on the usage of system resources (like CPU or RAM).
+   - CPU and RAM utilization can be considered as proxies for energy consumption, although this is a rough estimate. For a more accurate calculation, you would typically need to have direct data about the power consumed by the system (such as watts).
+
+2. **Measure Resource Utilization Over Time**:
+   - Resource usage can be tracked over time, such as CPU utilization (%) or RAM utilization (%).
+   - You would measure these over a period and integrate them over time to estimate total resource consumption.
+
+3. **Energy Efficiency**:
+   - Energy efficiency is often defined as the useful work (or task) done per unit of energy consumed. In a computational context, this could be the throughput (e.g., data processed, tasks completed) divided by the energy or resource consumption.
+
+   - Energy Efficiency formula:
+     \[
+     \text{Energy Efficiency} = \frac{\text{Useful Work Done}}{\text{Energy Consumption}}
+     \]
+     where:
+     - Useful work done can be things like throughput or completed tasks.
+     - Energy consumption could be represented by resource utilization (CPU time, RAM usage) and time.
+
+### Example Approach Using CPU Time and Resource Utilization:
+
+Assume you measure:
+- CPU time (`T_cpu`) used during a process.
+- Total RAM used (`T_ram`), or some other relevant resource.
+- Time taken for the computation (`T_time`).
+
+Now, you can compute energy efficiency by dividing the total "work done" by the resources consumed.
+
+1. **CPU Energy Efficiency**:
+   \[
+   \text{CPU Energy Efficiency} = \frac{\text{Throughput}}{\text{CPU Time} \times \text{CPU Utilization}}
+   \]
+
+2. **RAM Energy Efficiency**:
+   \[
+   \text{RAM Energy Efficiency} = \frac{\text{Throughput}}{\text{RAM Usage} \times \text{RAM Utilization}}
+   \]
+
+### Breakdown of the Code:
+1. **`get_resource_utilization`**: Tracks the CPU time used and RAM utilization by the program.
+2. **`calculate_throughput`**: Computes throughput as the file size divided by the CPU time.
+3. **`calculate_energy_efficiency`**: Computes energy efficiency by dividing throughput by resource consumption (CPU and RAM).
+
+### Energy Efficiency in Practice:
+- This approach provides a rough estimate of energy efficiency based on resource utilization and time.
+- In a real-world scenario, you would need to measure actual energy consumption (in watts), which would typically require hardware-level monitoring tools or power meters. However, using resource utilization as a proxy (CPU and RAM usage) allows us to estimate efficiency in software.
+
+### How to Improve:
+- If you have access to hardware power consumption data (like a power meter or energy profiler), you could replace resource utilization with actual energy consumption values.
+- For a more accurate energy efficiency calculation, tools like Intel Power Gadget (for Intel CPUs) or software solutions for monitoring power draw can be used to get real-time power consumption statistics.
+
+This provides a conceptual method for calculating energy efficiency based on the computational resources used and the time taken to complete a task. Let me know if you need further clarification or additional details
