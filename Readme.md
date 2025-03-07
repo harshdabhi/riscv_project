@@ -92,12 +92,16 @@ qemu-riscv64 -L /usr/riscv64-linux-gnu -cpu max ./hello
 - [RISC-V GNU Toolchain Documentation](https://github.com/riscv/riscv-gnu-toolchain)
 - [QEMU Documentation](https://www.qemu.org/)
 - [RISC-V Official Website](https://riscv.org/)
+- [Important article on different Extension type](https://research.redhat.com/blog/article/risc-v-extensions-whats-available-and-how-to-find-it/)
+- [Important guidance for latest Extension discussion](https://gitlab.com/qemu-project/qemu/-/issues/2245)
+- [Article on Bit Manipulation](https://fprox.substack.com/p/risc-v-scalar-bit-manipulation-extensions)
 
 ---
 
 ## Important Note
-Bit manipulation: Zba, Zbb, Zbc, Zbs
-Crypto scalar: Zbkb, Zbkc, Zbkx, Zk*
+   -  Bit manipulation: Zba, Zbb, Zbc, Zbs
+   -  Crypto scalar: Zbkb, Zbkc, Zbkx, Zk*
+   -  Vector (mostly complete): V, Zv*
 
 ## Example Workflow
 

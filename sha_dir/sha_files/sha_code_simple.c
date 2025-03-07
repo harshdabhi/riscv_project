@@ -192,12 +192,12 @@ void calculate_and_output_utilization_and_performance(double cpu_time_used, doub
     if (output_file != NULL) {
         // Check if the file is empty (first write) and write the column headers
         if (ftell(output_file) == 0) {
-            fprintf(output_file, "RAM Utilization, RAM Utilization (again), Max RAM used (KB), Total RAM available (MB), User CPU time, System CPU time, Total CPU time, CPU time used (seconds), Throughput (bytes/sec),CPU eff, RAM eff, SHA-256 Hash (hex)\n");
+            fprintf(output_file, "RAM Utilization, Max RAM used (KB), Total RAM available (MB), User CPU time, System CPU time, Total CPU time, CPU time used (seconds), Throughput (bytes/sec),CPU eff, RAM eff, SHA-256 Hash (hex)\n");
         }
 
         // Write the data (RAM Utilization, CPU Time, etc.)
-        fprintf(output_file, "%.2f, %.2f, %ld, %ld, %.6f, %.6f, %.6f, %.6f, %.6f,%.6f,%.6f, ",
-                ram_utilization, ram_utilization, maxrss, total_memory,
+        fprintf(output_file, "%.2f, %ld, %ld, %.6f, %.6f, %.6f, %.6f, %.6f,%.6f,%.6f, ",
+                ram_utilization,  maxrss, total_memory,
                 (double)(usage.ru_utime.tv_sec + usage.ru_utime.tv_usec / 1e6),
                 (double)(usage.ru_stime.tv_sec + usage.ru_stime.tv_usec / 1e6),
                 (double)(usage.ru_utime.tv_sec + usage.ru_stime.tv_sec),
