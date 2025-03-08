@@ -1,1 +1,8 @@
+#General setup of vscode
 .vscode
+
+#csv files
+with.csv
+without.csv
+
+
