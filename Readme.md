@@ -18,7 +18,20 @@ This project demonstrates how to compile and run RISC-V C code using the RISC-V 
 ### Install RISC-V GNU Toolchain and Qemu using Docker
 
 #### Clone this directory to desired dir and cd to dir
-#### Open terminal and type following command
+
+### Method 1
+   1. Clone this repo into directory ( Make sure docker is install on your computer )
+   2. Now open VsCode and type and select " Dev container configuration file "
+   ![Alt Text](./setup_img_files/dev_setup.png)
+
+   3. Now it will ask to select the folder where this repo is located on computer
+   4. It will automatically setup all dependencies and requirements ( Approx 40 to 50 min )
+
+### Method 2
+
+
+
+#### Go to the directory and following command
 ```bash
    docker build -t {$ image_name} .
    docker run -it {$ image_name}
