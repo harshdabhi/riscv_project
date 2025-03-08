@@ -21,8 +21,8 @@ This project demonstrates how to compile and run RISC-V C code using the RISC-V 
 
 ### Method 1
    1. Clone this repo into directory ( Make sure docker is install on your computer )
-   2. Now open VsCode and type and select " Dev container configuration file "
-   ![Alt Text](./setup_img_files/dev_setup.png)
+   2. Now open VsCode and type and select " Dev container:Open container configuration file "
+   ![vscode container setup](./setup_img_files/dev_setup.png)
 
    3. Now it will ask to select the folder where this repo is located on computer
    4. It will automatically setup all dependencies and requirements ( Approx 40 to 50 min )
