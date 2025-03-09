@@ -1,5 +1,7 @@
 Resource utilization generally refers to how efficiently various system resources (such as CPU, memory, disk I/O, etc.) are being used during the execution of a program. For the context of your SHA program, **CPU usage** and **memory usage** are two key resources to consider.
 
+## Metrics
+
 ### **1. CPU Utilization**
 
 CPU utilization measures how much of the CPU's processing power is used by the program. This is typically measured as a percentage of the total available CPU time.
@@ -246,3 +248,105 @@ Now, you can compute energy efficiency by dividing the total "work done" by the 
 - For a more accurate energy efficiency calculation, tools like Intel Power Gadget (for Intel CPUs) or software solutions for monitoring power draw can be used to get real-time power consumption statistics.
 
 This provides a conceptual method for calculating energy efficiency based on the computational resources used and the time taken to complete a task. Let me know if you need further clarification or additional details
+
+
+## Step to follow
+
+To simulate a RISC-V program with the **K extension** (Cryptography Extensions) in QEMU, you need to ensure that the QEMU RISC-V emulator supports the K extension and that you configure it correctly. Below are the steps to simulate your program in QEMU:
+
+---
+
+### 1. **Ensure QEMU Supports the K Extension**
+   - QEMU must be built with support for the RISC-V K extension. If you are using a pre-built QEMU, check if it supports the K extension by running:
+     ```bash
+     qemu-riscv64 -cpu help
+     ```
+     Look for a CPU model that includes `zk` (e.g., `rv64,zk=on` or similar).
+
+   - If your QEMU does not support the K extension, you will need to **build QEMU from source** with K extension support enabled.
+
+
+### 2. **Verify K Extension Support**:
+      After building, check if the K extension is supported:
+      ```bash
+      ./build/qemu-riscv64 -cpu help
+      ```
+      Look for a CPU model that includes `zk` or `zks`.
+
+---
+
+### 3. **Compile Your Program with K Extension Support**
+   Compile your program with the appropriate `-march` flag to enable the K extension. For example:
+   ```bash
+   riscv64-linux-gnu-gcc -march=rv64imafdc_zks -O3 -o sha_program sha_program.c
+   ```
+   - `rv64imafdc_zks`: Enables the base RISC-V ISA along with the `zks` subset of the K extension (for SHA-256).
+
+---
+
+### 4. **Run Your Program in QEMU**
+   Use QEMU to simulate your RISC-V program with the K extension enabled. For example:
+   ```bash
+   qemu-riscv64 -cpu rv64,zk=on ./sha_program
+   ```
+   - `-cpu rv64,zk=on`: Enables the K extension for the emulated CPU.
+
+---
+
+### 5. **Verify K Extension Usage**
+   To verify that the K extension is being used:
+   - Check the output of your program to ensure it is functioning correctly.
+   - Use QEMU's debugging features to trace instructions and confirm that K extension instructions (e.g., `sha256sum0`, `sha256sum1`) are being executed.
+
+   Example of enabling QEMU debug output:
+   ```bash
+   qemu-riscv64 -cpu rv64,zk=on -d in_asm ./sha_program
+   ```
+   This will log all executed instructions, allowing you to verify that K extension instructions are being used.
+
+---
+
+### 6. **Debugging and Profiling**
+   - If your program is not performing as expected, use QEMU's debugging features to trace execution and identify issues.
+   - You can also use tools like `gdb` to debug your RISC-V program in QEMU:
+     ```bash
+     qemu-riscv64 -cpu rv64,zk=on -g 1234 ./sha_program
+     ```
+     Then, in another terminal:
+     ```bash
+     riscv64-linux-gnu-gdb ./sha_program
+     (gdb) target remote :1234
+     ```
+
+---
+
+### 7. **Example Workflow**
+   Here’s a complete example workflow:
+
+   1. **Compile the Program**:
+      ```bash
+      riscv64-linux-gnu-gcc -march=rv64imafdc_zks -O3 -o sha_program sha_program.c
+      ```
+
+   2. **Run in QEMU**:
+      ```bash
+
+      
+      ```
+
+   3. **Debug (Optional)**:
+      ```bash
+      qemu-riscv64 -cpu rv64,zk=on -g 1234 ./sha_program
+      riscv64-linux-gnu-gdb ./sha_program
+      (gdb) target remote :1234
+      ```
+
+---
+
+### 8. **Troubleshooting**
+   - **K Extension Not Enabled**: If QEMU does not recognize the `zk` flag, ensure that you are using a version of QEMU that supports the K extension.
+   - **Performance Issues**: If performance is not improving, verify that the K extension instructions are being used by checking the instruction trace or debugging with `gdb`.
+
+---
+
+By following these steps, you should be able to simulate your RISC-V program with the K extension in QEMU and verify that it is using the hardware-accelerated cryptographic instructions.

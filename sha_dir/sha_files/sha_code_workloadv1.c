@@ -176,7 +176,7 @@ void calculate_and_output_utilization_and_performance(double cpu_time_used, doub
     long total_memory = sysconf(_SC_PHYS_PAGES) * sysconf(_SC_PAGE_SIZE) / 1024 / 1024;
     double ram_utilization = (double)maxrss / (total_memory * 1024) * 100;
 
-    FILE *output_file = fopen("utilization_and_performance_output.csv", "a");
+    FILE *output_file = fopen("./generated_stat_files/performance_output_sha.csv", "a");
 
     if (output_file != NULL) {
         if (ftell(output_file) == 0) {
@@ -203,7 +203,7 @@ int main() {
     srand(time(NULL));
 
     // Create a directory to store generated files
-    const char *dir_name = "generated_files";
+    const char *dir_name = "./bin/generated_files";
     create_directory(dir_name);
 
     for (size_t file_size = 10 * 1024; file_size <= 1 * 1024 * 1024; file_size += 10 * 1024) {
