@@ -166,3 +166,4 @@ qemu-riscv64 -L /usr/riscv64-linux-gnu -cpu max ./hello
 This project is licensed under the MIT License.
 
 
+ls /usr/local/bin | grep qemu

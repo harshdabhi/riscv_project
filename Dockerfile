@@ -30,19 +30,21 @@ RUN apt-get update && \
     git \
     cmake \
     libglib2.0-dev \
-    libslirp-dev && \
+    libslirp-dev \
+    libssl-dev\
+    libncurses-dev \
+    libz-dev &&\
     # Ensure pip is installed and upgraded
     python3 -m pip install --upgrade pip \
-    libssl-dev \
     && apt clean
 
 
 # Installation of Gnu Toolchain
 FROM env AS toolchain
 RUN apt update && apt install -y git && apt clean
-RUN git clone --recursive https://github.com/riscv/riscv-gnu-toolchain
+RUN git clone https://github.com/riscv/riscv-gnu-toolchain /riscv-gnu-toolchain
 WORKDIR /riscv-gnu-toolchain
-RUN ./configure --prefix=/opt/riscv && make linux -j `nproc`
+RUN ./configure --prefix=/opt/riscv --enable-multilib && make linux -j4
 
 
 # Installation of Qemu latest version in case of further update please change the version
@@ -50,12 +52,14 @@ FROM env AS qemu
 RUN curl -O https://download.qemu.org/qemu-9.2.2.tar.xz && \
     tar -xvJf qemu-9.2.2.tar.xz
 WORKDIR /qemu-9.2.2
-RUN ./configure && make -j `nproc`
+RUN ./configure --target-list=riscv32-linux-user,riscv64-linux-user && make -j4
+
 
 # Moving the files from env to root
 FROM env
-COPY --from=toolchain /opt/riscv /opt/riscv
+# COPY --from=toolchain /opt/riscv /opt/riscv
 COPY --from=qemu /qemu-9.2.2/build/qemu-riscv64 /usr/local/bin/
+COPY --from=qemu /qemu-9.2.2/build/qemu-riscv32 /usr/local/bin/
 
 
 # Installation of RiscV64 linux Gnu
