@@ -166,4 +166,9 @@ qemu-riscv64 -L /usr/riscv64-linux-gnu -cpu max ./hello
 This project is licensed under the MIT License.
 
 
+
+/opt/riscv/bin/riscv64-unknown-linux-gnu-gcc -print-multi-lib
 ls /usr/local/bin | grep qemu
+
+/opt/riscv/bin/riscv64-unknown-linux-gnu-gcc -march=rv32imac -mabi=ilp32 hello.c -static -o hello32
+qemu-riscv32 ./hello32

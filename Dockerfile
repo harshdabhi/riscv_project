@@ -57,7 +57,7 @@ RUN ./configure --target-list=riscv32-linux-user,riscv64-linux-user && make -j4
 
 # Moving the files from env to root
 FROM env
-# COPY --from=toolchain /opt/riscv /opt/riscv
+COPY --from=toolchain /opt/riscv /opt/riscv
 COPY --from=qemu /qemu-9.2.2/build/qemu-riscv64 /usr/local/bin/
 COPY --from=qemu /qemu-9.2.2/build/qemu-riscv32 /usr/local/bin/
 
