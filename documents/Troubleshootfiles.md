@@ -89,3 +89,7 @@ riscv64-linux-gnu-gcc -march=rv64imafdc_zks -O3 -funroll-loops -flto -o sha_prog
 ---
 
 By using these flags and ensuring proper hardware and compiler support, you should be able to leverage the RISC-V K extension for improved SHA hashing performance.
+
+May 2025
+
+/opt/riscv/bin/riscv64-unknown-linux-gnu-gcc  -march=rv64id_zk -S sha_code_simple.c

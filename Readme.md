@@ -10,6 +10,7 @@ This project demonstrates how to compile and run RISC-V C code using the RISC-V 
 2. [Compiling RISC-V C Code](#compiling-risc-v-c-code)
 3. [Running the Executable on QEMU](#running-the-executable-on-qemu)
 4. [Important Resources](#important-resources)
+5. [Instruction set guide](https://gcc.gnu.org/onlinedocs/gcc/RISC-V-Options.html)
 
 ---
 
@@ -166,9 +167,22 @@ qemu-riscv64 -L /usr/riscv64-linux-gnu -cpu max ./hello
 This project is licensed under the MIT License.
 
 
+Command To validate installation
+
+```bash
+
 
 /opt/riscv/bin/riscv64-unknown-linux-gnu-gcc -print-multi-lib
 ls /usr/local/bin | grep qemu
+```
 
-/opt/riscv/bin/riscv64-unknown-linux-gnu-gcc -march=rv32imac -mabi=ilp32 hello.c -static -o hello32
-qemu-riscv32 ./hello32
+
+
+
+Command to execute k extension on 32 bit
+```bash
+
+/opt/riscv/bin/riscv64-unknown-linux-gnu-gcc -march=rv32imac_zk -mabi=ilp32 hello.c -static -o hello32
+/usr/local/bin/qemu-riscv32 ./hello32
+
+```
