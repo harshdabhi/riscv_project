@@ -62,14 +62,6 @@ COPY --from=qemu /qemu-9.2.2/build/qemu-riscv64 /usr/local/bin/
 COPY --from=qemu /qemu-9.2.2/build/qemu-riscv32 /usr/local/bin/
 
 
-# Installation of RiscV64 linux Gnu
-# (remove this part if any kind of error takes places)
-RUN apt update && \
-    apt install -y \
-    gcc-riscv64-linux-gnu \
-    g++-riscv64-linux-gnu \
-    && apt clean
-
 
 WORKDIR /root
 

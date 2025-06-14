@@ -23,13 +23,7 @@
         "terminal.integrated.sendKeybindingsToShell": true,
         "extensions.ignoreRecommendations": true,
         "remote.autoForwardPorts": false
-      },
-      "extensions": [
-        "zhwu95.riscv",
-        "ZixuanWang.linkerscript",
-        "ms-vscode.cpptools",
-        "davidbwaters.macos-modern-theme"
-	    ]
+      }
     }
   },
   "postCreateCommand": "pip3 install pygments && wget -P ~ https://git.io/.gdbinit"
