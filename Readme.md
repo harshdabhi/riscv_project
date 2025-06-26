@@ -406,3 +406,40 @@ Command to execute k extension on 32 bit
    - Our test cases might have different characteristics than those in the original research
    - The original research might have focused on specific use cases
 
+
+
+https://github.com/riscv/riscv-crypto/blob/main/benchmarks/sha512/zscrypto_rv32/sha512.c
+
+https://github.com/mjosaarinen/lwaes_isa/blob/master/bitmanip.c
+
+
+```bash
+
+command for testv1.c
+
+/opt/riscv/bin/riscv64-unknown-linux-gnu-gcc -march=rv32imac_zbb_zbc -mabi=ilp32 -D USE_RISCV_ACCEL aes_dir/aes_gem/testv1.c -static -o hello32
+
+/usr/local/bin/qemu-riscv32 ./hello32
+
+
+command for testv2
+
+/opt/riscv/bin/riscv64-unknown-linux-gnu-gcc -march=rv32imac -mabi=ilp32 aes_dir/aes_filesv2/testv2.c -static -o hello32
+
+ /usr/local/bin/qemu-riscv32 ./hello32 10485760
+
+command for testv4
+
+
+/opt/riscv/bin/riscv64-unknown-linux-gnu-gcc -march=rv32imac_zbb_zbc -mabi=ilp32 -D USE_RISCV_ACCEL aes_dir/aes_filesv2/testv2.c -static -o hello32
+
+ /usr/local/bin/qemu-riscv32 ./hello32
+
+
+docker mounting
+
+docker run -it -v $(pwd):/app my-custom-image:tagdocker run -it -v $(pwd):/app my-custom-image:tag
+
+
+python3 -m pip install jupyter notebook ipykernel
+ ```
