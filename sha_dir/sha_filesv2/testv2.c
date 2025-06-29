@@ -10,8 +10,9 @@
 #define SHA256_BLOCK_SIZE 64
 #define SHA256_DIGEST_SIZE 32
 
-typedef struct {
-    uint8_t  buf[SHA256_BLOCK_SIZE];
+typedef struct
+{
+    uint8_t buf[SHA256_BLOCK_SIZE];
     uint32_t h[8];
     uint64_t len;
 } sha256_ctx;
@@ -19,8 +20,7 @@ typedef struct {
 // Initial hash values for SHA-256
 static const uint32_t sha256_h_init[8] = {
     0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
-    0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19
-};
+    0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19};
 
 // Round constants for SHA-256
 static const uint32_t sha256_k[64] = {
@@ -31,15 +31,16 @@ static const uint32_t sha256_k[64] = {
     0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
     0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
     0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
-    0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
-};
+    0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2};
 
 // Helper for byte swapping
-static inline uint32_t bswap_32(uint32_t x) {
+static inline uint32_t bswap_32(uint32_t x)
+{
     return ((x & 0xff000000) >> 24) | ((x & 0x00ff0000) >> 8) |
-           ((x & 0x0000ff00) << 8)  | ((x & 0x000000ff) << 24);
+           ((x & 0x0000ff00) << 8) | ((x & 0x000000ff) << 24);
 }
-static inline uint64_t bswap_64(uint64_t x) {
+static inline uint64_t bswap_64(uint64_t x)
+{
     return ((uint64_t)bswap_32(x) << 32) | bswap_32(x >> 32);
 }
 
@@ -51,7 +52,6 @@ void sha256_init(sha256_ctx *ctx);
 void sha256_update(sha256_ctx *ctx, const uint8_t *data, size_t len);
 void sha256_final(sha256_ctx *ctx, uint8_t *digest);
 
-
 /*****************************************************************************/
 /* CORE SHA-256 TRANSFORM (STANDARD VS ACCELERATED)                          */
 /*****************************************************************************/
@@ -59,16 +59,19 @@ void sha256_final(sha256_ctx *ctx, uint8_t *digest);
 #ifdef USE_RISCV_CRYPTO_EXT
 
 // ACCELERATED VERSION (using Zksh instructions) - OPTIMIZED
-void sha256_transform(sha256_ctx *ctx, const uint8_t *block) {
+void sha256_transform(sha256_ctx *ctx, const uint8_t *block)
+{
     uint32_t w[64];
     uint32_t a, b, c, d, e, f, g, h;
     uint32_t t1, t2;
 
     // 1. Prepare the message schedule array (w[0..63])
-    for (int i = 0; i < 16; ++i) {
-        w[i] = bswap_32(((uint32_t*)block)[i]);
+    for (int i = 0; i < 16; ++i)
+    {
+        w[i] = bswap_32(((uint32_t *)block)[i]);
     }
-    for (int i = 16; i < 64; ++i) {
+    for (int i = 16; i < 64; ++i)
+    {
         uint32_t s0, s1;
         // s0 = sigma0(w[i - 15])
         asm("sha256sig0 %0, %1" : "=r"(s0) : "r"(w[i - 15]));
@@ -77,11 +80,18 @@ void sha256_transform(sha256_ctx *ctx, const uint8_t *block) {
         w[i] = w[i - 16] + s0 + w[i - 7] + s1;
     }
 
-    a = ctx->h[0]; b = ctx->h[1]; c = ctx->h[2]; d = ctx->h[3];
-    e = ctx->h[4]; f = ctx->h[5]; g = ctx->h[6]; h = ctx->h[7];
+    a = ctx->h[0];
+    b = ctx->h[1];
+    c = ctx->h[2];
+    d = ctx->h[3];
+    e = ctx->h[4];
+    f = ctx->h[5];
+    g = ctx->h[6];
+    h = ctx->h[7];
 
     // 2. Run the 64 compression rounds
-    for (int i = 0; i < 64; ++i) {
+    for (int i = 0; i < 64; ++i)
+    {
         uint32_t s1, ch;
         // s1 = Sigma1(e)
         asm("sha256sum1 %0, %1" : "=r"(s1) : "r"(e));
@@ -94,12 +104,24 @@ void sha256_transform(sha256_ctx *ctx, const uint8_t *block) {
         maj = (a & b) ^ (a & c) ^ (b & c); // Majority function
         t2 = s0 + maj;
 
-        h = g; g = f; f = e; e = d + t1;
-        d = c; c = b; b = a; a = t1 + t2;
+        h = g;
+        g = f;
+        f = e;
+        e = d + t1;
+        d = c;
+        c = b;
+        b = a;
+        a = t1 + t2;
     }
 
-    ctx->h[0] += a; ctx->h[1] += b; ctx->h[2] += c; ctx->h[3] += d;
-    ctx->h[4] += e; ctx->h[5] += f; ctx->h[6] += g; ctx->h[7] += h;
+    ctx->h[0] += a;
+    ctx->h[1] += b;
+    ctx->h[2] += c;
+    ctx->h[3] += d;
+    ctx->h[4] += e;
+    ctx->h[5] += f;
+    ctx->h[6] += g;
+    ctx->h[7] += h;
 }
 
 #else
@@ -114,30 +136,52 @@ void sha256_transform(sha256_ctx *ctx, const uint8_t *block) {
 #define sigma0(x) (ROTR(x, 7) ^ ROTR(x, 18) ^ ((x) >> 3))
 #define sigma1(x) (ROTR(x, 17) ^ ROTR(x, 19) ^ ((x) >> 10))
 
-void sha256_transform(sha256_ctx *ctx, const uint8_t *block) {
+void sha256_transform(sha256_ctx *ctx, const uint8_t *block)
+{
     uint32_t w[64];
     uint32_t a, b, c, d, e, f, g, h;
     uint32_t t1, t2;
 
-    for (int i = 0; i < 16; ++i) {
-        w[i] = bswap_32(((uint32_t*)block)[i]);
+    for (int i = 0; i < 16; ++i)
+    {
+        w[i] = bswap_32(((uint32_t *)block)[i]);
     }
-    for (int i = 16; i < 64; ++i) {
+    for (int i = 16; i < 64; ++i)
+    {
         w[i] = sigma1(w[i - 2]) + w[i - 7] + sigma0(w[i - 15]) + w[i - 16];
     }
 
-    a = ctx->h[0]; b = ctx->h[1]; c = ctx->h[2]; d = ctx->h[3];
-    e = ctx->h[4]; f = ctx->h[5]; g = ctx->h[6]; h = ctx->h[7];
+    a = ctx->h[0];
+    b = ctx->h[1];
+    c = ctx->h[2];
+    d = ctx->h[3];
+    e = ctx->h[4];
+    f = ctx->h[5];
+    g = ctx->h[6];
+    h = ctx->h[7];
 
-    for (int i = 0; i < 64; ++i) {
+    for (int i = 0; i < 64; ++i)
+    {
         t1 = h + Sigma1(e) + Ch(e, f, g) + sha256_k[i] + w[i];
         t2 = Sigma0(a) + Maj(a, b, c);
-        h = g; g = f; f = e; e = d + t1;
-        d = c; c = b; b = a; a = t1 + t2;
+        h = g;
+        g = f;
+        f = e;
+        e = d + t1;
+        d = c;
+        c = b;
+        b = a;
+        a = t1 + t2;
     }
 
-    ctx->h[0] += a; ctx->h[1] += b; ctx->h[2] += c; ctx->h[3] += d;
-    ctx->h[4] += e; ctx->h[5] += f; ctx->h[6] += g; ctx->h[7] += h;
+    ctx->h[0] += a;
+    ctx->h[1] += b;
+    ctx->h[2] += c;
+    ctx->h[3] += d;
+    ctx->h[4] += e;
+    ctx->h[5] += f;
+    ctx->h[6] += g;
+    ctx->h[7] += h;
 }
 
 #endif // USE_RISCV_CRYPTO_EXT
@@ -146,19 +190,23 @@ void sha256_transform(sha256_ctx *ctx, const uint8_t *block) {
 /* SHA-256 API IMPLEMENTATION (INIT, UPDATE, FINAL)                          */
 /*****************************************************************************/
 
-void sha256_init(sha256_ctx *ctx) {
+void sha256_init(sha256_ctx *ctx)
+{
     memcpy(ctx->h, sha256_h_init, sizeof(ctx->h));
     memset(ctx->buf, 0, sizeof(ctx->buf));
     ctx->len = 0;
 }
 
-void sha256_update(sha256_ctx *ctx, const uint8_t *data, size_t len) {
+void sha256_update(sha256_ctx *ctx, const uint8_t *data, size_t len)
+{
     size_t buffer_bytes = ctx->len % SHA256_BLOCK_SIZE;
     ctx->len += len;
 
-    if (buffer_bytes > 0) {
+    if (buffer_bytes > 0)
+    {
         size_t to_fill = SHA256_BLOCK_SIZE - buffer_bytes;
-        if (len < to_fill) {
+        if (len < to_fill)
+        {
             memcpy(ctx->buf + buffer_bytes, data, len);
             return;
         }
@@ -168,27 +216,33 @@ void sha256_update(sha256_ctx *ctx, const uint8_t *data, size_t len) {
         len -= to_fill;
     }
 
-    while (len >= SHA256_BLOCK_SIZE) {
+    while (len >= SHA256_BLOCK_SIZE)
+    {
         sha256_transform(ctx, data);
         data += SHA256_BLOCK_SIZE;
         len -= SHA256_BLOCK_SIZE;
     }
 
-    if (len > 0) {
+    if (len > 0)
+    {
         memcpy(ctx->buf, data, len);
     }
 }
 
-void sha256_final(sha256_ctx *ctx, uint8_t *digest) {
+void sha256_final(sha256_ctx *ctx, uint8_t *digest)
+{
     size_t buffer_bytes = ctx->len % SHA256_BLOCK_SIZE;
 
     ctx->buf[buffer_bytes++] = 0x80;
 
-    if (buffer_bytes > SHA256_BLOCK_SIZE - 8) {
+    if (buffer_bytes > SHA256_BLOCK_SIZE - 8)
+    {
         memset(ctx->buf + buffer_bytes, 0, SHA256_BLOCK_SIZE - buffer_bytes);
         sha256_transform(ctx, ctx->buf);
         memset(ctx->buf, 0, SHA256_BLOCK_SIZE);
-    } else {
+    }
+    else
+    {
         memset(ctx->buf + buffer_bytes, 0, SHA256_BLOCK_SIZE - buffer_bytes);
     }
 
@@ -196,40 +250,47 @@ void sha256_final(sha256_ctx *ctx, uint8_t *digest) {
     memcpy(ctx->buf + SHA256_BLOCK_SIZE - 8, &bit_len, 8);
     sha256_transform(ctx, ctx->buf);
 
-    for (int i = 0; i < 8; ++i) {
-        ((uint32_t*)digest)[i] = bswap_32(ctx->h[i]);
+    for (int i = 0; i < 8; ++i)
+    {
+        ((uint32_t *)digest)[i] = bswap_32(ctx->h[i]);
     }
 }
-
 
 /*****************************************************************************/
 /* AUTOMATED BENCHMARKING SUITE                                              */
 /*****************************************************************************/
 
-const char* TEMP_IN_FILENAME = "temp_data.bin";
+const char *TEMP_IN_FILENAME = "temp_data.bin";
 
-typedef struct {
+typedef struct
+{
     double execution_time;
     double throughput_mbs;
 } PerformanceResult;
 
-int create_test_file(long long size) {
+int create_test_file(long long size)
+{
     FILE *fp = fopen(TEMP_IN_FILENAME, "wb");
-    if (!fp) return -1;
-    for (long long i = 0; i < size; ++i) fputc(i % 256, fp);
+    if (!fp)
+        return -1;
+    for (long long i = 0; i < size; ++i)
+        fputc(i % 256, fp);
     fclose(fp);
     return 0;
 }
 
-PerformanceResult run_benchmark_for_size(long long size) {
+PerformanceResult run_benchmark_for_size(long long size)
+{
     PerformanceResult result = {0.0, 0.0};
-    if (create_test_file(size) != 0) {
+    if (create_test_file(size) != 0)
+    {
         perror("ERROR: Failed to create test file");
         return result;
     }
 
     FILE *in_file = fopen(TEMP_IN_FILENAME, "rb");
-    if (!in_file) {
+    if (!in_file)
+    {
         perror("ERROR: Error opening file for hashing");
         return result;
     }
@@ -242,7 +303,8 @@ PerformanceResult run_benchmark_for_size(long long size) {
     size_t bytes_read;
 
     sha256_init(&ctx);
-    while((bytes_read = fread(file_buffer, 1, sizeof(file_buffer), in_file)) > 0) {
+    while ((bytes_read = fread(file_buffer, 1, sizeof(file_buffer), in_file)) > 0)
+    {
         sha256_update(&ctx, file_buffer, bytes_read);
     }
     sha256_final(&ctx, final_hash);
@@ -253,38 +315,42 @@ PerformanceResult run_benchmark_for_size(long long size) {
     remove(TEMP_IN_FILENAME);
 
     result.execution_time = ((double)(end - start)) / CLOCKS_PER_SEC;
-    if (result.execution_time > 0) {
+    if (result.execution_time > 0)
+    {
         result.throughput_mbs = (double)size / (1024 * 1024) / result.execution_time;
     }
     return result;
 }
 
-int main() {
+int main()
+{
     // Note: SHA-256 is faster than AES, so we can start with a larger step size
     // to keep the benchmark runtime reasonable.
-    const long long START_SIZE = 100 * 1024;      // 100 KB
-    const long long END_SIZE   = 10 * 1024 * 1024; // 10 MB
-    const long long STEP_SIZE  = 100 * 1024;     // 100 KB
+    const long long START_SIZE = 100 * 1024;     // 100 KB
+    const long long END_SIZE = 10 * 1024 * 1024; // 10 MB
+    const long long STEP_SIZE = 100 * 1024;      // 100 KB
 
     printf("--- RISC-V SHA-256 Performance Sweep ---\n");
 #ifdef USE_RISCV_CRYPTO_EXT
-    const char* mode_str = "Accelerated (Zksh)";
-    const char* csv_filename = "sha256_accelerated_results.csv";
+    const char *mode_str = "Accelerated (Zksh)";
+    const char *csv_filename = "sha256_accelerated_results.csv";
 #else
-    const char* mode_str = "Standard C (Baseline)";
-    const char* csv_filename = "sha256_standard_results.csv";
+    const char *mode_str = "Standard C (Baseline)";
+    const char *csv_filename = "sha256_standard_results.csv";
 #endif
     printf("Mode: %s\n", mode_str);
     printf("Workload: Hashing files from %lld KB to %lld MB.\n", START_SIZE / 1024, END_SIZE / (1024 * 1024));
 
-    FILE* csv_file = fopen(csv_filename, "w");
-    if (!csv_file) {
+    FILE *csv_file = fopen(csv_filename, "w");
+    if (!csv_file)
+    {
         perror("ERROR: Could not open CSV file for writing");
         return 1;
     }
     fprintf(csv_file, "FileSize_KB,ExecutionTime_s,Throughput_MBps,CPU_Cycles_Placeholder,Energy_Joules_Placeholder\n");
 
-    for (long long current_size = START_SIZE; current_size <= END_SIZE; current_size += STEP_SIZE) {
+    for (long long current_size = START_SIZE; current_size <= END_SIZE; current_size += STEP_SIZE)
+    {
         printf("Processing size: %lld KB\r", current_size / 1024);
         fflush(stdout);
 

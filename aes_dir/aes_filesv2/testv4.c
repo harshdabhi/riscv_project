@@ -11,8 +11,6 @@
 #define Nr 10
 #define AES_BLOCK_SIZE 16
 
-
-
 // AES S-box
 static const uint8_t s_box[256] = {
     0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
@@ -34,54 +32,207 @@ static const uint8_t s_box[256] = {
 
 static const uint8_t Rcon[11] = {0x8d, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36};
 typedef uint8_t state_t[4][4];
-void KeyExpansion(uint8_t*k,const uint8_t*K){uint32_t i,j,l;uint8_t t[4];for(i=0;i<Nk;++i){k[i*4]=K[i*4];k[i*4+1]=K[i*4+1];k[i*4+2]=K[i*4+2];k[i*4+3]=K[i*4+3];}for(i=Nk;i<Nb*(Nr+1);++i){l=(i-1)*4;t[0]=k[l];t[1]=k[l+1];t[2]=k[l+2];t[3]=k[l+3];if(i%Nk==0){const uint8_t u=t[0];t[0]=t[1];t[1]=t[2];t[2]=t[3];t[3]=u;t[0]=s_box[t[0]];t[1]=s_box[t[1]];t[2]=s_box[t[2]];t[3]=s_box[t[3]];t[0]^=Rcon[i/Nk];}j=i*4;l=(i-Nk)*4;k[j]=k[l]^t[0];k[j+1]=k[l+1]^t[1];k[j+2]=k[l+2]^t[2];k[j+3]=k[l+3]^t[3];}}
-void AddRoundKey(uint8_t r,state_t*s,const uint8_t*Rk){for(uint8_t i=0;i<4;++i)for(uint8_t j=0;j<4;++j)(*s)[j][i]^=Rk[r*Nb*4+i*Nb+j];}
-void SubBytes(state_t*s){for(uint8_t i=0;i<4;++i)for(uint8_t j=0;j<4;++j)(*s)[j][i]=s_box[(*s)[j][i]];}
+void KeyExpansion(uint8_t *k, const uint8_t *K)
+{
+    uint32_t i, j, l;
+    uint8_t t[4];
+    for (i = 0; i < Nk; ++i)
+    {
+        k[i * 4] = K[i * 4];
+        k[i * 4 + 1] = K[i * 4 + 1];
+        k[i * 4 + 2] = K[i * 4 + 2];
+        k[i * 4 + 3] = K[i * 4 + 3];
+    }
+    for (i = Nk; i < Nb * (Nr + 1); ++i)
+    {
+        l = (i - 1) * 4;
+        t[0] = k[l];
+        t[1] = k[l + 1];
+        t[2] = k[l + 2];
+        t[3] = k[l + 3];
+        if (i % Nk == 0)
+        {
+            const uint8_t u = t[0];
+            t[0] = t[1];
+            t[1] = t[2];
+            t[2] = t[3];
+            t[3] = u;
+            t[0] = s_box[t[0]];
+            t[1] = s_box[t[1]];
+            t[2] = s_box[t[2]];
+            t[3] = s_box[t[3]];
+            t[0] ^= Rcon[i / Nk];
+        }
+        j = i * 4;
+        l = (i - Nk) * 4;
+        k[j] = k[l] ^ t[0];
+        k[j + 1] = k[l + 1] ^ t[1];
+        k[j + 2] = k[l + 2] ^ t[2];
+        k[j + 3] = k[l + 3] ^ t[3];
+    }
+}
+void AddRoundKey(uint8_t r, state_t *s, const uint8_t *Rk)
+{
+    for (uint8_t i = 0; i < 4; ++i)
+        for (uint8_t j = 0; j < 4; ++j)
+            (*s)[j][i] ^= Rk[r * Nb * 4 + i * Nb + j];
+}
+void SubBytes(state_t *s)
+{
+    for (uint8_t i = 0; i < 4; ++i)
+        for (uint8_t j = 0; j < 4; ++j)
+            (*s)[j][i] = s_box[(*s)[j][i]];
+}
 
 #ifdef USE_RISCV_ACCEL
-void ShiftRows(state_t*s){uint32_t r1,r2,r3;r1=((*s)[1][0]<<24)|((*s)[1][1]<<16)|((*s)[1][2]<<8)|(*s)[1][3];asm volatile("rori %0,%1,24":"=r"(r1):"r"(r1));(*s)[1][0]=r1>>24;(*s)[1][1]=r1>>16;(*s)[1][2]=r1>>8;(*s)[1][3]=r1;r2=((*s)[2][0]<<24)|((*s)[2][1]<<16)|((*s)[2][2]<<8)|(*s)[2][3];asm volatile("rori %0,%1,16":"=r"(r2):"r"(r2));(*s)[2][0]=r2>>24;(*s)[2][1]=r2>>16;(*s)[2][2]=r2>>8;(*s)[2][3]=r2;r3=((*s)[3][0]<<24)|((*s)[3][1]<<16)|((*s)[3][2]<<8)|(*s)[3][3];asm volatile("rori %0,%1,8":"=r"(r3):"r"(r3));(*s)[3][0]=r3>>24;(*s)[3][1]=r3>>16;(*s)[3][2]=r3>>8;(*s)[3][3]=r3;}
-void MixColumns(state_t*s){uint32_t t,a,b;const uint32_t M2=0x02020202,M3=0x03030303;for(int i=0;i<4;i++){a=(*s)[0][i]|(*s)[1][i]<<8|(*s)[2][i]<<16|(*s)[3][i]<<24;asm volatile("clmul %0,%1,%2":"=r"(t):"r"(a),"r"(M2));asm volatile("clmul %0,%1,%2":"=r"(b):"r"(a),"r"(M3));t^=b;b=a;asm volatile("rori %0,%1,8":"=r"(b):"r"(b));t^=b;asm volatile("rori %0,%1,8":"=r"(b):"r"(b));t^=b;asm volatile("rori %0,%1,8":"=r"(b):"r"(b));t^=b;(*s)[0][i]=t;(*s)[1][i]=t>>8;(*s)[2][i]=t>>16;(*s)[3][i]=t>>24;}}
+void ShiftRows(state_t *s)
+{
+    uint32_t r1, r2, r3;
+    r1 = ((*s)[1][0] << 24) | ((*s)[1][1] << 16) | ((*s)[1][2] << 8) | (*s)[1][3];
+    asm volatile("rori %0,%1,24" : "=r"(r1) : "r"(r1));
+    (*s)[1][0] = r1 >> 24;
+    (*s)[1][1] = r1 >> 16;
+    (*s)[1][2] = r1 >> 8;
+    (*s)[1][3] = r1;
+    r2 = ((*s)[2][0] << 24) | ((*s)[2][1] << 16) | ((*s)[2][2] << 8) | (*s)[2][3];
+    asm volatile("rori %0,%1,16" : "=r"(r2) : "r"(r2));
+    (*s)[2][0] = r2 >> 24;
+    (*s)[2][1] = r2 >> 16;
+    (*s)[2][2] = r2 >> 8;
+    (*s)[2][3] = r2;
+    r3 = ((*s)[3][0] << 24) | ((*s)[3][1] << 16) | ((*s)[3][2] << 8) | (*s)[3][3];
+    asm volatile("rori %0,%1,8" : "=r"(r3) : "r"(r3));
+    (*s)[3][0] = r3 >> 24;
+    (*s)[3][1] = r3 >> 16;
+    (*s)[3][2] = r3 >> 8;
+    (*s)[3][3] = r3;
+}
+void MixColumns(state_t *s)
+{
+    uint32_t t, a, b;
+    const uint32_t M2 = 0x02020202, M3 = 0x03030303;
+    for (int i = 0; i < 4; i++)
+    {
+        a = (*s)[0][i] | (*s)[1][i] << 8 | (*s)[2][i] << 16 | (*s)[3][i] << 24;
+        asm volatile("clmul %0,%1,%2" : "=r"(t) : "r"(a), "r"(M2));
+        asm volatile("clmul %0,%1,%2" : "=r"(b) : "r"(a), "r"(M3));
+        t ^= b;
+        b = a;
+        asm volatile("rori %0,%1,8" : "=r"(b) : "r"(b));
+        t ^= b;
+        asm volatile("rori %0,%1,8" : "=r"(b) : "r"(b));
+        t ^= b;
+        asm volatile("rori %0,%1,8" : "=r"(b) : "r"(b));
+        t ^= b;
+        (*s)[0][i] = t;
+        (*s)[1][i] = t >> 8;
+        (*s)[2][i] = t >> 16;
+        (*s)[3][i] = t >> 24;
+    }
+}
 #else
-void ShiftRows(state_t*s){uint8_t t;t=(*s)[1][0];(*s)[1][0]=(*s)[1][1];(*s)[1][1]=(*s)[1][2];(*s)[1][2]=(*s)[1][3];(*s)[1][3]=t;t=(*s)[2][0];(*s)[2][0]=(*s)[2][2];(*s)[2][2]=t;t=(*s)[2][1];(*s)[2][1]=(*s)[2][3];(*s)[2][3]=t;t=(*s)[3][0];(*s)[3][0]=(*s)[3][3];(*s)[3][3]=(*s)[3][2];(*s)[3][2]=(*s)[3][1];(*s)[3][1]=t;}
-uint8_t xtime(uint8_t x){return(x<<1)^(((x>>7)&1)*0x1b);}
-void MixColumns(state_t*s){uint8_t i,a,b,c,d;for(i=0;i<4;++i){a=(*s)[0][i];b=(*s)[1][i];c=(*s)[2][i];d=(*s)[3][i];(*s)[0][i]=xtime(a)^(xtime(b)^b)^c^d;(*s)[1][i]=a^xtime(b)^(xtime(c)^c)^d;(*s)[2][i]=a^b^xtime(c)^(xtime(d)^d);(*s)[3][i]=(xtime(a)^a)^b^c^xtime(d);}}
+void ShiftRows(state_t *s)
+{
+    uint8_t t;
+    t = (*s)[1][0];
+    (*s)[1][0] = (*s)[1][1];
+    (*s)[1][1] = (*s)[1][2];
+    (*s)[1][2] = (*s)[1][3];
+    (*s)[1][3] = t;
+    t = (*s)[2][0];
+    (*s)[2][0] = (*s)[2][2];
+    (*s)[2][2] = t;
+    t = (*s)[2][1];
+    (*s)[2][1] = (*s)[2][3];
+    (*s)[2][3] = t;
+    t = (*s)[3][0];
+    (*s)[3][0] = (*s)[3][3];
+    (*s)[3][3] = (*s)[3][2];
+    (*s)[3][2] = (*s)[3][1];
+    (*s)[3][1] = t;
+}
+uint8_t xtime(uint8_t x) { return (x << 1) ^ (((x >> 7) & 1) * 0x1b); }
+void MixColumns(state_t *s)
+{
+    uint8_t i, a, b, c, d;
+    for (i = 0; i < 4; ++i)
+    {
+        a = (*s)[0][i];
+        b = (*s)[1][i];
+        c = (*s)[2][i];
+        d = (*s)[3][i];
+        (*s)[0][i] = xtime(a) ^ (xtime(b) ^ b) ^ c ^ d;
+        (*s)[1][i] = a ^ xtime(b) ^ (xtime(c) ^ c) ^ d;
+        (*s)[2][i] = a ^ b ^ xtime(c) ^ (xtime(d) ^ d);
+        (*s)[3][i] = (xtime(a) ^ a) ^ b ^ c ^ xtime(d);
+    }
+}
 #endif
-void aes_encrypt(state_t*s,const uint8_t*Rk){AddRoundKey(0,s,Rk);for(uint8_t r=1;r<Nr;++r){SubBytes(s);ShiftRows(s);MixColumns(s);AddRoundKey(r,s,Rk);}SubBytes(s);ShiftRows(s);AddRoundKey(Nr,s,Rk);}
-void block_to_state(const uint8_t*b,state_t*s){for(int r=0;r<4;++r)for(int c=0;c<4;++c)(*s)[r][c]=b[c*4+r];}
-void state_to_block(const state_t*s,uint8_t*b){for(int r=0;r<4;++r)for(int c=0;c<4;++c)b[c*4+r]=(*s)[r][c];}
-
+void aes_encrypt(state_t *s, const uint8_t *Rk)
+{
+    AddRoundKey(0, s, Rk);
+    for (uint8_t r = 1; r < Nr; ++r)
+    {
+        SubBytes(s);
+        ShiftRows(s);
+        MixColumns(s);
+        AddRoundKey(r, s, Rk);
+    }
+    SubBytes(s);
+    ShiftRows(s);
+    AddRoundKey(Nr, s, Rk);
+}
+void block_to_state(const uint8_t *b, state_t *s)
+{
+    for (int r = 0; r < 4; ++r)
+        for (int c = 0; c < 4; ++c)
+            (*s)[r][c] = b[c * 4 + r];
+}
+void state_to_block(const state_t *s, uint8_t *b)
+{
+    for (int r = 0; r < 4; ++r)
+        for (int c = 0; c < 4; ++c)
+            b[c * 4 + r] = (*s)[r][c];
+}
 
 /*****************************************************************************/
 /* AUTOMATED BENCHMARKING SUITE                                              */
 /*****************************************************************************/
 
-const char* IN_FILENAME = "temp_data.bin";
-const char* OUT_FILENAME = "temp_data.enc";
+const char *IN_FILENAME = "temp_data.bin";
+const char *OUT_FILENAME = "temp_data.enc";
 
-typedef struct {
+typedef struct
+{
     double execution_time;
     double throughput_mbs;
 } PerformanceResult;
 
-int create_test_file(long long size) {
+int create_test_file(long long size)
+{
     FILE *fp = fopen(IN_FILENAME, "wb");
-    if (!fp) return -1;
+    if (!fp)
+        return -1;
     // Using a simple pattern is faster than random for large files
-    for (long long i = 0; i < size; ++i) fputc(i % 256, fp);
+    for (long long i = 0; i < size; ++i)
+        fputc(i % 256, fp);
     fclose(fp);
     return 0;
 }
 
-PerformanceResult run_benchmark_for_size(long long size, const uint8_t* RoundKey) {
+PerformanceResult run_benchmark_for_size(long long size, const uint8_t *RoundKey)
+{
     PerformanceResult result = {0.0, 0.0};
-    if (create_test_file(size) != 0) {
+    if (create_test_file(size) != 0)
+    {
         perror("ERROR: Failed to create test file");
         return result;
     }
 
     FILE *in_file = fopen(IN_FILENAME, "rb");
     FILE *out_file = fopen(OUT_FILENAME, "wb");
-    if (!in_file || !out_file) {
+    if (!in_file || !out_file)
+    {
         perror("ERROR: Error opening files for encryption");
         return result;
     }
@@ -93,8 +244,10 @@ PerformanceResult run_benchmark_for_size(long long size, const uint8_t* RoundKey
     state_t state;
     size_t bytes_read;
 
-    while ((bytes_read = fread(in_block, 1, AES_BLOCK_SIZE, in_file)) > 0) {
-        if (bytes_read < AES_BLOCK_SIZE) {
+    while ((bytes_read = fread(in_block, 1, AES_BLOCK_SIZE, in_file)) > 0)
+    {
+        if (bytes_read < AES_BLOCK_SIZE)
+        {
             uint8_t pad_val = AES_BLOCK_SIZE - bytes_read;
             memset(in_block + bytes_read, pad_val, pad_val);
         }
@@ -104,7 +257,8 @@ PerformanceResult run_benchmark_for_size(long long size, const uint8_t* RoundKey
         fwrite(out_block, 1, AES_BLOCK_SIZE, out_file);
     }
 
-    if (size > 0 && size % AES_BLOCK_SIZE == 0) {
+    if (size > 0 && size % AES_BLOCK_SIZE == 0)
+    {
         memset(in_block, AES_BLOCK_SIZE, AES_BLOCK_SIZE);
         block_to_state(in_block, &state);
         aes_encrypt(&state, RoundKey);
@@ -120,16 +274,18 @@ PerformanceResult run_benchmark_for_size(long long size, const uint8_t* RoundKey
     remove(OUT_FILENAME);
 
     result.execution_time = ((double)(end - start)) / CLOCKS_PER_SEC;
-    if (result.execution_time > 0) {
+    if (result.execution_time > 0)
+    {
         result.throughput_mbs = (double)size / (1024 * 1024) / result.execution_time;
     }
     return result;
 }
 
-int main() {
-    const long long START_SIZE = 100 * 1024;       // 100 KB
-    const long long END_SIZE   = 10 * 1024 * 1024;  // 10 MB
-    const long long STEP_SIZE  = 100 * 1024;       // 100 KB
+int main()
+{
+    const long long START_SIZE = 100 * 1024;     // 100 KB
+    const long long END_SIZE = 10 * 1024 * 1024; // 10 MB
+    const long long STEP_SIZE = 100 * 1024;      // 100 KB
 
     uint8_t key[] = {0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6, 0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c};
     uint8_t RoundKey[176];
@@ -137,18 +293,19 @@ int main() {
     // --- Setup ---
     printf("--- RISC-V AES Performance Sweep ---\n");
 #ifdef USE_RISCV_ACCEL
-    const char* mode_str = "Accelerated (Zbb, Zbc)";
-    const char* csv_filename = "accelerated_results_aes.csv";
+    const char *mode_str = "Accelerated (Zbb, Zbc)";
+    const char *csv_filename = "accelerated_results_aes.csv";
 #else
-    const char* mode_str = "Standard C (Baseline)";
-    const char* csv_filename = "standard_results_aes.csv";
+    const char *mode_str = "Standard C (Baseline)";
+    const char *csv_filename = "standard_results_aes.csv";
 #endif
     printf("Mode: %s\n", mode_str);
     printf("Workload: Encrypting files from %lld KB to %lld MB.\n", START_SIZE / 1024, END_SIZE / (1024 * 1024));
 
     // Open CSV file for writing
-    FILE* csv_file = fopen(csv_filename, "w");
-    if (!csv_file) {
+    FILE *csv_file = fopen(csv_filename, "w");
+    if (!csv_file)
+    {
         perror("ERROR: Could not open CSV file for writing");
         return 1;
     }
@@ -160,7 +317,8 @@ int main() {
     fprintf(csv_file, "FileSize_KB,ExecutionTime_s,Throughput_MBps,CPU_Cycles_Placeholder,Energy_Joules_Placeholder\n");
 
     // --- Run Benchmark Sweep ---
-    for (long long current_size = START_SIZE; current_size <= END_SIZE; current_size += STEP_SIZE) {
+    for (long long current_size = START_SIZE; current_size <= END_SIZE; current_size += STEP_SIZE)
+    {
         // Print progress to console
         printf("Processing size: %lld KB\r", current_size / 1024);
         fflush(stdout);
