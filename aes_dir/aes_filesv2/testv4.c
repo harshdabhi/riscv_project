@@ -11,10 +11,7 @@
 #define Nr 10
 #define AES_BLOCK_SIZE 16
 
-// --- Core AES Logic (S-box, Rcon, KeyExpansion, etc.) ---
-// This entire section is identical to the previous version and is
-// omitted here for brevity. You should copy it from your previous file.
-// ... (paste the entire block of AES code from s_box to state_to_block here) ...
+
 
 // AES S-box
 static const uint8_t s_box[256] = {
@@ -34,11 +31,13 @@ static const uint8_t s_box[256] = {
     0x70, 0x3e, 0xb5, 0x66, 0x48, 0x03, 0xf6, 0x0e, 0x61, 0x35, 0x57, 0xb9, 0x86, 0xc1, 0x1d, 0x9e,
     0xe1, 0xf8, 0x98, 0x11, 0x69, 0xd9, 0x8e, 0x94, 0x9b, 0x1e, 0x87, 0xe9, 0xce, 0x55, 0x28, 0xdf,
     0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16};
+
 static const uint8_t Rcon[11] = {0x8d, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36};
 typedef uint8_t state_t[4][4];
 void KeyExpansion(uint8_t*k,const uint8_t*K){uint32_t i,j,l;uint8_t t[4];for(i=0;i<Nk;++i){k[i*4]=K[i*4];k[i*4+1]=K[i*4+1];k[i*4+2]=K[i*4+2];k[i*4+3]=K[i*4+3];}for(i=Nk;i<Nb*(Nr+1);++i){l=(i-1)*4;t[0]=k[l];t[1]=k[l+1];t[2]=k[l+2];t[3]=k[l+3];if(i%Nk==0){const uint8_t u=t[0];t[0]=t[1];t[1]=t[2];t[2]=t[3];t[3]=u;t[0]=s_box[t[0]];t[1]=s_box[t[1]];t[2]=s_box[t[2]];t[3]=s_box[t[3]];t[0]^=Rcon[i/Nk];}j=i*4;l=(i-Nk)*4;k[j]=k[l]^t[0];k[j+1]=k[l+1]^t[1];k[j+2]=k[l+2]^t[2];k[j+3]=k[l+3]^t[3];}}
 void AddRoundKey(uint8_t r,state_t*s,const uint8_t*Rk){for(uint8_t i=0;i<4;++i)for(uint8_t j=0;j<4;++j)(*s)[j][i]^=Rk[r*Nb*4+i*Nb+j];}
 void SubBytes(state_t*s){for(uint8_t i=0;i<4;++i)for(uint8_t j=0;j<4;++j)(*s)[j][i]=s_box[(*s)[j][i]];}
+
 #ifdef USE_RISCV_ACCEL
 void ShiftRows(state_t*s){uint32_t r1,r2,r3;r1=((*s)[1][0]<<24)|((*s)[1][1]<<16)|((*s)[1][2]<<8)|(*s)[1][3];asm volatile("rori %0,%1,24":"=r"(r1):"r"(r1));(*s)[1][0]=r1>>24;(*s)[1][1]=r1>>16;(*s)[1][2]=r1>>8;(*s)[1][3]=r1;r2=((*s)[2][0]<<24)|((*s)[2][1]<<16)|((*s)[2][2]<<8)|(*s)[2][3];asm volatile("rori %0,%1,16":"=r"(r2):"r"(r2));(*s)[2][0]=r2>>24;(*s)[2][1]=r2>>16;(*s)[2][2]=r2>>8;(*s)[2][3]=r2;r3=((*s)[3][0]<<24)|((*s)[3][1]<<16)|((*s)[3][2]<<8)|(*s)[3][3];asm volatile("rori %0,%1,8":"=r"(r3):"r"(r3));(*s)[3][0]=r3>>24;(*s)[3][1]=r3>>16;(*s)[3][2]=r3>>8;(*s)[3][3]=r3;}
 void MixColumns(state_t*s){uint32_t t,a,b;const uint32_t M2=0x02020202,M3=0x03030303;for(int i=0;i<4;i++){a=(*s)[0][i]|(*s)[1][i]<<8|(*s)[2][i]<<16|(*s)[3][i]<<24;asm volatile("clmul %0,%1,%2":"=r"(t):"r"(a),"r"(M2));asm volatile("clmul %0,%1,%2":"=r"(b):"r"(a),"r"(M3));t^=b;b=a;asm volatile("rori %0,%1,8":"=r"(b):"r"(b));t^=b;asm volatile("rori %0,%1,8":"=r"(b):"r"(b));t^=b;asm volatile("rori %0,%1,8":"=r"(b):"r"(b));t^=b;(*s)[0][i]=t;(*s)[1][i]=t>>8;(*s)[2][i]=t>>16;(*s)[3][i]=t>>24;}}
