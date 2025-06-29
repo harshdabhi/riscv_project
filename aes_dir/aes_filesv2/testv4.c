@@ -1,38 +1,4 @@
-/**
- * @file testv4.c
- * @brief Final version that runs a benchmark sweep and saves results to a CSV file.
- *
- * This program automatically encrypts files of increasing size (100KB to 1MB)
- * and saves the performance results directly to a CSV file.
- *
- * It includes placeholder columns for CPU cycles and energy usage, which
- * must be measured using external tools while this program runs.
- *
- * --- How to Compile ---
- *
- * 1. Compile WITHOUT acceleration (baseline):
- * riscv64-unknown-elf-gcc -O2 -march=rv64g -o aes_standard_final riscv_aes_eval_v2_final.c
- *
- * 2. Compile WITH RISC-V acceleration:
- * riscv64-unknown-elf-gcc -O2 -march=rv64gc_zba_zbb_zbc_zbs -D USE_RISCV_ACCEL -o aes_accelerated_final riscv_aes_eval_v2_final.c
- *
- * --- How to Run and Measure ---
- *
- * 1. Run the benchmark normally. It will create a CSV file automatically.
- *    qemu-riscv64 ./aes_accelerated_final
- *    (This will create 'accelerated_results.csv')
- *
- * 2. To measure resource/energy usage, run the program under a monitoring tool.
- *    The tool will report aggregate numbers for the *entire run*. You can then
- *    correlate this data with the generated CSV.
- *
- *    Example using 'perf' on a Linux host (if running natively):
- *    perf stat -e cycles,instructions,power/energy-pkg/ ./aes_accelerated_final
- *
- *    The 'perf' command will print total cycles, instructions, and energy (on
- *    supported hardware). You can then analyze this data alongside the
- *    throughput data in the CSV.
- */
+
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>

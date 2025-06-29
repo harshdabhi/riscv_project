@@ -1,38 +1,4 @@
-/**
- * @file riscv_sha256_eval_final.c
- * @brief A C program for SHA-256 that can be compiled WITH or WITHOUT
- * RISC-V crypto extensions for performance comparison.
- *
- * This version runs an automated benchmark sweep, hashing files of
- * increasing size and saving the results directly to a CSV file.
- *
- * The accelerated path uses the Zksh extension for the core SHA-256
- * logical functions (sum0, sum1, sig0, sig1).
- *
- * --- How to Compile (Corrected Commands) ---
- *
- * 1. Compile WITHOUT acceleration (baseline):
- * The compiler will only use standard C operations.
- *
- * riscv64-unknown-elf-gcc -O2 -march=rv64g -o sha256_standard_final riscv_sha256_eval_final.c -static
- *
- * 2. Compile WITH RISC-V acceleration:
- * We enable the extensions and define the USE_RISCV_CRYPTO_EXT macro.
- * CRITICAL: The '-march' flag MUST include '_zksh' to enable the SHA instructions.
- *
- * riscv64-unknown-elf-gcc -O2 -march=rv64gc_zba_zbb_zbkb_zbkc_zbkx_zksh -D USE_RISCV_CRYPTO_EXT -o sha256_accelerated_final riscv_sha256_eval_final.c -static
- *
- * --- How to Run and Measure ---
- *
- * 1. Run the benchmark. It will create a CSV file automatically.
- *    qemu-riscv64 ./sha256_accelerated_final
- *    (This will create 'sha256_accelerated_results.csv')
- *
- * 2. To measure resource/energy usage, run under a monitoring tool like 'perf'.
- *    perf stat -e cycles,instructions ./sha256_accelerated_final
- *
- *    Correlate the 'perf' output with the generated CSV for a full analysis.
- */
+
 
 #include <stdio.h>
 #include <stdint.h>
