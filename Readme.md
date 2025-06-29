@@ -130,8 +130,4 @@ A: Performance metrics are saved in `aes_metrics.csv` after running `./aes_exec.
 **Q: Can I run my own C files?**
 A: Yes, place them in the appropriate directory and modify the scripts as needed.
 
----
-
-## License
-This project is licensed under the MIT License.
-
+--
