@@ -94,29 +94,6 @@ jupyter notebook --ip=0.0.0.0 --port=8888 --allow-root
 
 ---
 
-## Results & Analysis
-- **AES and SHA performance** is measured for various data sizes and instruction sets, including RV32I, RV32I_ZBB, RV32I_ZKSH, and others.
-- **Key findings:**
-  - RV32I is faster for small data sizes
-  - RV32I_ZBB and RV32I_ZKSH extensions outperform for larger data sizes or specific algorithms
-  - Code size and instruction count differences are minimal
-- See `aes_metrics.csv` for raw results.
-- For detailed tables and analysis, see the "Results" section in this README or supplementary files.
-
----
-
-## Resources
-- [RISC-V GNU Toolchain Documentation](https://github.com/riscv/riscv-gnu-toolchain)
-- [QEMU Documentation](https://www.qemu.org/)
-- [RISC-V Official Website](https://riscv.org/)
-- [RISC-V Extensions Article](https://research.redhat.com/blog/article/risc-v-extensions-whats-available-and-how-to-find-it/)
-- [QEMU Extension Discussion](https://gitlab.com/qemu-project/qemu/-/issues/2245)
-- [Bit Manipulation Article](https://fprox.substack.com/p/risc-v-scalar-bit-manipulation-extensions)
-- [SHA512 RISC-V Example](https://github.com/riscv/riscv-crypto/blob/main/benchmarks/sha512/zscrypto_rv32/sha512.c)
-- [Bitmanip Example](https://github.com/mjosaarinen/lwaes_isa/blob/master/bitmanip.c)
-
----
-
 ## FAQ & Troubleshooting
 **Q: The scripts fail with permission denied?**
 A: Run `chmod +x *.sh` to make scripts executable.
@@ -131,3 +108,16 @@ A: Performance metrics are saved in `aes_metrics.csv` after running `./aes_exec.
 A: Yes, place them in the appropriate directory and modify the scripts as needed.
 
 --
+
+
+## Resources
+- [RISC-V GNU Toolchain Documentation](https://github.com/riscv/riscv-gnu-toolchain)
+- [QEMU Documentation](https://www.qemu.org/)
+- [RISC-V Official Website](https://riscv.org/)
+- [RISC-V Extensions Article](https://research.redhat.com/blog/article/risc-v-extensions-whats-available-and-how-to-find-it/)
+- [QEMU Extension Discussion](https://gitlab.com/qemu-project/qemu/-/issues/2245)
+- [Bit Manipulation Article](https://fprox.substack.com/p/risc-v-scalar-bit-manipulation-extensions)
+- [SHA512 RISC-V Example](https://github.com/riscv/riscv-crypto/blob/main/benchmarks/sha512/zscrypto_rv32/sha512.c)
+- [Bitmanip Example](https://github.com/mjosaarinen/lwaes_isa/blob/master/bitmanip.c)
+
+---
