@@ -1,7 +1,7 @@
 # AES & SHA Performance Testing on RISC-V
 
 ## Project Overview
-This project benchmarks AES and SHA cryptographic performance on RISC-V, comparing the base RV32I instruction set, RV32I_ZBB (bit manipulation extension), RV32I_ZKSH (SHA crypto extension), and other relevant variants. It uses a prebuilt Docker image (Created and pushed by Harsh Mayank Dabhi) for a reproducible environment and provides scripts for easy testing and validation.
+This project benchmarks AES and SHA cryptographic performance on RISC-V, comparing the base RV32I instruction set, RV32I_ZBB (bit manipulation extension), RV32I_ZKNH (SHA crypto extension), and other relevant variants. It uses a prebuilt Docker image (Created and pushed by Harsh Dabhi) for a reproducible environment and provides scripts for easy testing and validation.
 
 ---
 
