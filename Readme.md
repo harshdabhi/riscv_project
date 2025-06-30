@@ -119,5 +119,6 @@ A: Yes, place them in the appropriate directory and modify the scripts as needed
 - [Bit Manipulation Article](https://fprox.substack.com/p/risc-v-scalar-bit-manipulation-extensions)
 - [SHA512 RISC-V Example](https://github.com/riscv/riscv-crypto/blob/main/benchmarks/sha512/zscrypto_rv32/sha512.c)
 - [Bitmanip Example](https://github.com/mjosaarinen/lwaes_isa/blob/master/bitmanip.c)
+- [Important RISCV coding document](https://lists.riscv.org/g/dev-partners/attachment/43/0/riscv-crypto-spec-scalar-v0.9.3-DRAFT.pdf#page=40&zoom=100,0,0)
 
 ---
