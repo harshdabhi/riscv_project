@@ -121,4 +121,7 @@ A: Yes, place them in the appropriate directory and modify the scripts as needed
 - [Bitmanip Example](https://github.com/mjosaarinen/lwaes_isa/blob/master/bitmanip.c)
 - [Important RISCV coding document](https://lists.riscv.org/g/dev-partners/attachment/43/0/riscv-crypto-spec-scalar-v0.9.3-DRAFT.pdf#page=40&zoom=100,0,0)
 
+- [Coding example RISCV](https://github.com/lowRISC/opentitan/blob/master/sw/device/lib/crypto/impl/)
+
+
 ---
